@@ -1,0 +1,47 @@
+from math import atan,degrees
+class JetGrout:
+    def __init__(self,CSR,CRR,buildingStress,safetyFactor,G_em,Sh,Sv,D,G_soil,G_jetgrout,cohesion,frictionAngle,qu,E):
+        self.D = D #m
+        self.G_soil = G_soil #kPa
+        self.G_jet = G_jetgrout #kPa
+        self.G_em = G_em #kPa
+        self.cohesion = cohesion #kPa
+        self.friction = frictionAngle
+        self.qu = qu #kPa
+        self.E = E #kPa
+        self.Sh = Sh #m
+        self.Sv = Sv #m
+        self.P = buildingStress #kPa
+        self.FS = safetyFactor
+        self.CSR = CSR
+        self.CRR = CRR
+
+        self.Gr = self.G_jet/self.G_soil
+        self.A = self.Sh * self.Sv
+        self.Ajg = 3.14*(self.D**2)/4
+        self.Ar = self.Ajg/self.A
+    
+    def SR(self):
+        return (1/self.Gr)/(self.Ar + (1/self.Gr)*(1-self.Ar))
+    
+    def BearingCapacity(self):
+        g_ult = (self.qu*self.Ajg + self.G_em*(self.A - self.Ajg))/self.A
+        check = True if g_ult>= self.P*self.FS else False
+        return g_ult,check
+    
+    def Liquefaction(self):
+        CSRi = self.SR()*self.CSR
+        FS = self.CRR / CSRi
+        return CSRi,FS
+    
+    def Parameters(self):
+        Gt = 0.14*self.qu
+        c = Gt*self.qu/(2*(Gt*(self.qu-3*Gt))**0.5)
+        tan_fi = (self.qu**2 - 4*c**2)/(4*self.qu * c)
+    
+        fi = degrees(atan(tan_fi))
+
+        return c,fi,tan_fi
+Jet = JetGrout(0.246,0.138,100,1,1,2,2,0.6,64000,2317000,1,1,1500,1)
+print(Jet.Parameters())
+
